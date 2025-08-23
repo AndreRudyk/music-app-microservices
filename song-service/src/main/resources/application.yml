@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: song-service
+
+  datasource:
+    url: ${SONG_DB_URL:jdbc:postgresql://localhost:5433/song-db}
+    driverClassName: org.postgresql.Driver
+    username: ${POSTGRES_USER_SONG:user8082}
+    password: ${POSTGRES_PASSWORD_SONG:password8082}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+
+server:
+  port: 8082
+  servlet:
+    context-path: /song-service
+
+resource-service:
+  baseUrl: ${RESOURCE_SERVICE_URL:http://localhost:8080}/resource-service/api/v1/resources/
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

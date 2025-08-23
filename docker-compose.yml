@@ -1,0 +1,61 @@
+services:
+  resource-db:
+    image: postgres:17-alpine3.20
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_RESOURCE}
+      POSTGRES_USER: ${POSTGRES_USER_RESOURCE}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_RESOURCE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-scripts/resource-db:/docker-entrypoint-initdb.d
+
+  song-db:
+    image: postgres:17-alpine3.20
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_SONG}
+      POSTGRES_USER: ${POSTGRES_USER_SONG}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_SONG}
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init-scripts/song-db:/docker-entrypoint-initdb.d
+
+  service-registry:
+    build:
+      context: .
+      dockerfile: ./eureka-service-registry/Dockerfile
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_HOST=service-registry
+
+  resource-service:
+    build:
+      context: .
+      dockerfile: ./resource-service/Dockerfile-resource
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
+      SONG_SERVICE_URL: http://song-service:8082
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka
+    depends_on:
+      - resource-db
+      - service-registry
+
+  song-service:
+    build:
+      context: .
+      dockerfile: ./song-service/Dockerfile-song
+#    deploy:
+#      replicas: 2
+    ports:
+      - 8082-8083:8082
+    environment:
+      SPRING_DATASOURCE_URL: ${SONG_DB_URL}
+      RESOURCE_SERVICE_URL: http://resource-service:8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka
+    depends_on:
+      - song-db
+      - service-registry

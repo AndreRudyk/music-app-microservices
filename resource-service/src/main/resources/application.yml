@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: resource-service
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+
+  datasource:
+    url: ${RESOURCE_DB_URL:jdbc:postgresql://localhost:5432/resource-db}
+    driverClassName: org.postgresql.Driver
+    username: ${POSTGRES_USER_RESOURCE:user8080}
+    password: ${POSTGRES_PASSWORD_RESOURCE:password8080}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+
+server:
+  port: 8080
+  servlet:
+    context-path: /resource-service
+
+song-service:
+  baseUrl: ${SONG_SERVICE_URL:http://localhost:8082}/song-service/api/v1/songs
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+
