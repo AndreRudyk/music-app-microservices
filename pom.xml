@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.musicapp</groupId>
-    <artifactId>music-app</artifactId>
+    <artifactId>music-app-microservices</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -19,6 +19,7 @@
         <tika.version>3.0.0</tika.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <org.springframework.cloud.version>4.2.0</org.springframework.cloud.version>
+        <awssdk.version>2.20.111</awssdk.version>
     </properties>
 
     <dependencyManagement>

@@ -2,6 +2,7 @@ package resourceservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,15 +33,14 @@ public class ResourceServiceController {
 
     @GetMapping(path = "/{id}", produces = "audio/mpeg")
     public ResponseEntity<byte[]> getResource(@PathVariable @Valid @PositiveInteger String id) {
-        ResourceEntity entity = resourceService.getResourceById(Integer.parseInt(id));
-        String fileName = entity.getId() + ".mp3";
+        Pair<String, byte[]> resultPair = resourceService.getResourceById(Integer.parseInt(id));
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+ fileName+ "\"");
-        httpHeaders.setContentLength(entity.getBytes().length);
+        httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+ resultPair.getLeft() + "\"");
+        httpHeaders.setContentLength(resultPair.getRight().length);
         httpHeaders.setContentType(MediaType.parseMediaType("audio/mpeg"));
         return ResponseEntity.ok()
                 .headers(httpHeaders)
-                .body(entity.getBytes());
+                .body(resultPair.getRight());
     }
 
     @DeleteMapping(produces = MediaType.APPLICATION_JSON_VALUE)

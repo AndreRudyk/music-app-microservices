@@ -2,5 +2,6 @@ CREATE SCHEMA IF NOT EXISTS public;
 
 CREATE TABLE IF NOT EXISTS resource (
     id SERIAL PRIMARY KEY,
-    bytes BYTEA
+    bucket_key VARCHAR(255) UNIQUE,
+    file_url VARCHAR(255) UNIQUE
 );
