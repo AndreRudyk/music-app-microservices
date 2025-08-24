@@ -89,6 +89,7 @@
         <module>domain</module>
         <module>resource-service</module>
         <module>song-service</module>
+        <module>resource-processor</module>
     </modules>
 
     <build>
