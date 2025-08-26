@@ -14,9 +14,12 @@ public class ResourceEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private byte[] bytes;
+    private String bucketKey;
 
-    public ResourceEntity(byte[] bytes) {
-        this.bytes = bytes;
+    private String fileUrl;
+
+    public ResourceEntity(String bucketKey, String fileUrlUrl) {
+        this.bucketKey = bucketKey;
+        this.fileUrl = fileUrlUrl;
     }
 }

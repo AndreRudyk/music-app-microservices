@@ -1,4 +1,14 @@
 services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+    volumes:
+        - ./localstack:/var/lib/localstack
+
   resource-db:
     image: postgres:17-alpine3.20
     environment:
@@ -40,9 +50,11 @@ services:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SONG_SERVICE_URL: http://song-service:8082
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka
+      AWS_S3_ENDPOINT: ${AWS_S3_ENDPOINT}
     depends_on:
       - resource-db
       - service-registry
+      - localstack
 
   song-service:
     build:

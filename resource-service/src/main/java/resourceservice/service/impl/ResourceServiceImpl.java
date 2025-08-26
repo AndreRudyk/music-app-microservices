@@ -2,20 +2,19 @@ package resourceservice.service.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tika.exception.TikaException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXException;
-import request.song.SongMetadataRequest;
 import resourceservice.client.feign.SongServiceClient;
 import resourceservice.entity.ResourceEntity;
 import resourceservice.exception.ResourceNotFoundException;
 import resourceservice.repository.ResourceRepository;
+import resourceservice.service.S3Service;
 import resourceservice.service.CreateSongRequestService;
 import resourceservice.service.ResourceService;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -28,28 +27,22 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final SongServiceClient songServiceClient;
 
+    private final S3Service s3Service;
+
     @Override
     public ResourceEntity saveResource(byte[] file) {
-        ResourceEntity savedResource = resourceRepository.save(new ResourceEntity(file));
-        SongMetadataRequest request;
-        try {
-            request = createSongRequestService.extractMetadata(file, savedResource.getId());
-        } catch (IOException | SAXException | TikaException e) {
-            log.error("Exception occured while extracting metadata, resource id is {}", savedResource.getId());
-            throw new RuntimeException(e);
-        }
-        try {
-            songServiceClient.saveSongMetadata(request);
-        } catch (Exception e) {
-            resourceRepository.deleteById(savedResource.getId());
-            throw new RuntimeException(e);
-        }
+        String bucketKey = UUID.randomUUID().toString() + ".mp3";
+        log.info("Saving file : {}", bucketKey);
+        String fileUrl = s3Service.getFileUrl(bucketKey);
+        ResourceEntity savedResource = resourceRepository.save(new ResourceEntity(bucketKey, fileUrl));
+        s3Service.uploadFile(bucketKey, file);
         return savedResource;
     }
 
     @Override
-    public ResourceEntity getResourceById(Integer id) {
+    public Pair<String, byte[]> getResourceById(Integer id) {
         return resourceRepository.findById(id)
+                .map(resourceEntity -> Pair.of(resourceEntity.getBucketKey(), s3Service.downloadFile(resourceEntity.getBucketKey())))
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found!"));
     }
 
@@ -59,8 +52,10 @@ public class ResourceServiceImpl implements ResourceService {
                 .map(Integer::parseInt)
                 .filter(resourceRepository::existsById)
                 .toList();
+        resourceRepository.findAllById(existingIds).stream()
+                .map(ResourceEntity::getBucketKey)
+                .forEach(s3Service::deleteFile);
         resourceRepository.deleteAllByIdInBatch(existingIds);
-        songServiceClient.deleteSongMetadata(ids);
         return existingIds;
     }
 
