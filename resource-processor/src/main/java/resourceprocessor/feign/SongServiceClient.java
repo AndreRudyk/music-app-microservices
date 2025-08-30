@@ -3,6 +3,8 @@ package resourceprocessor.feign;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +17,7 @@ import validation.ValidIdsCsv;
 @FeignClient(name = "song-service")
 public interface SongServiceClient {
 
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
     @PostMapping("song-service/api/v1/songs")
     ResponseEntity<SongMetadataResponse> saveSongMetadata(@Valid @RequestBody SongMetadataRequest request);
 

@@ -12,6 +12,12 @@ spring:
         resourceUploaded-in-0:
           destination: resource-uploaded
           group: resource-processor-group
+          consumer:
+            maxAttempts: 5
+            backOffInitialInterval: 1000
+            backOffMaxInterval: 10000
+            backOffMultiplier: 2.0
+            defaultRetryable: true
 
   rabbitmq:
     host: ${RABBITMQ_HOST:rabbitmq}
