@@ -90,6 +90,7 @@
         <module>resource-service</module>
         <module>song-service</module>
         <module>resource-processor</module>
+        <module>eureka-service-registry</module>
     </modules>
 
     <build>

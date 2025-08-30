@@ -28,6 +28,7 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public SongMetadataEntity createSongMetadata(SongMetadataRequest request) {
+        log.info("Before createSongMetadata");
         if (repository.existsById(Integer.valueOf(request.getId()))) {
             log.error("Song with id {} already exists", request.getId());
             throw new SongAlreadyExists(String.format("Resource with ID=%s already exists", request.getId()));

@@ -1,7 +1,6 @@
-package resourceservice.client.feign;
+package resourceprocessor.feign;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,9 +15,9 @@ import validation.ValidIdsCsv;
 @FeignClient(name = "song-service")
 public interface SongServiceClient {
 
-    @PostMapping("/song-service/api/v1/songs")
-    public ResponseEntity<SongMetadataResponse> saveSongMetadata(@Valid @RequestBody SongMetadataRequest request);
+    @PostMapping("song-service/api/v1/songs")
+    ResponseEntity<SongMetadataResponse> saveSongMetadata(@Valid @RequestBody SongMetadataRequest request);
 
-    @DeleteMapping("/song-service/api/v1/songs")
-    public ResponseEntity<DeleteSongResponse> deleteSongMetadata(@RequestParam("id") @ValidIdsCsv(maxLength = 100) String ids);
+    @DeleteMapping("song-service/api/v1/songs")
+    ResponseEntity<DeleteSongResponse> deleteSongMetadata(@RequestParam("id") @ValidIdsCsv(maxLength = 100) String ids);
 }

@@ -1,5 +1,6 @@
-package resourceservice.service.impl;
+package resourceprocessor.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -8,35 +9,35 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 import request.song.SongMetadataRequest;
-import resourceservice.service.CreateSongRequestService;
+import util.AudioTagUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static resourceservice.util.AudioTagUtils.*;
-
+@Slf4j
 @Service
 public class CreateSongRequestServiceImpl implements CreateSongRequestService {
 
     @Override
-    public SongMetadataRequest extractMetadata(byte[] songData, Integer id) throws IOException, TikaException, SAXException {
+    public SongMetadataRequest extractMetadata(byte[] songData, Integer id) {
         try (InputStream inputstream = new ByteArrayInputStream(songData)) {
             BodyContentHandler handler = new BodyContentHandler();
             Metadata metadata = new Metadata();
             ParseContext pcontext = new ParseContext();
-
             Mp3Parser mp3Parser = new Mp3Parser();
             mp3Parser.parse(inputstream, handler, metadata, pcontext);
-
             SongMetadataRequest songMetadata = new SongMetadataRequest();
             songMetadata.setId(String.valueOf(id));
-            songMetadata.setName(metadata.get(TITLE_TAG) != null ? metadata.get(TITLE_TAG) : "Unknown Title");
-            songMetadata.setArtist(metadata.get(ARTIST_TAG) != null ? metadata.get(ARTIST_TAG) : "Unknown Artist");
-            songMetadata.setAlbum(metadata.get(ALBUM_TAG) != null ? metadata.get(ALBUM_TAG) : "Unknown Album");
-            songMetadata.setDuration(formatDuration(metadata.get(DURATION_TAG)));
-            songMetadata.setYear(metadata.get(RELEASE_DATE_TAG));
-
+            songMetadata.setName(metadata.get(AudioTagUtils.TITLE_TAG) != null ? metadata.get(AudioTagUtils.TITLE_TAG) : "Unknown Title");
+            songMetadata.setArtist(metadata.get(AudioTagUtils.ARTIST_TAG) != null ? metadata.get(AudioTagUtils.ARTIST_TAG) : "Unknown Artist");
+            songMetadata.setAlbum(metadata.get(AudioTagUtils.ALBUM_TAG) != null ? metadata.get(AudioTagUtils.ALBUM_TAG) : "Unknown Album");
+            songMetadata.setDuration(formatDuration(metadata.get(AudioTagUtils.DURATION_TAG)));
+            songMetadata.setYear(metadata.get(AudioTagUtils.RELEASE_DATE_TAG));
             return songMetadata;
+        } catch (TikaException | SAXException | IOException e) {
+            log.error("Error occurred: {}", e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

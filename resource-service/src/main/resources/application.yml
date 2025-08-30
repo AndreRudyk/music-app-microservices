@@ -17,13 +17,18 @@ spring:
     hibernate:
       ddl-auto: none
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    virtual-host: ${RABBITMQ_DEFAULT_VHOST:/}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    queue: resource-uploaded
+
 server:
   port: 8080
   servlet:
     context-path: /resource-service
-
-song-service:
-  baseUrl: ${SONG_SERVICE_URL:http://localhost:8082}/song-service/api/v1/songs
 
 eureka:
   client:

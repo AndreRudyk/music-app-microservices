@@ -18,9 +18,6 @@ server:
   servlet:
     context-path: /song-service
 
-resource-service:
-  baseUrl: ${RESOURCE_SERVICE_URL:http://localhost:8080}/resource-service/api/v1/resources/
-
 eureka:
   client:
     serviceUrl:
