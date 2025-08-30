@@ -25,17 +25,13 @@ public class ResourceUploadedListener {
     @Bean
     public Consumer<String> resourceUploaded() {
         return resourceId -> {
-            try {
-                log.info("Received a message with resourceId: {}", resourceId);
-                ResponseEntity<byte[]> response = resourceServiceClient.getResource(resourceId);
-                byte[] resourceData = response.getBody();
-                SongMetadataRequest request =
-                        createSongRequestService.extractMetadata(resourceData, Integer.parseInt(resourceId));
-                log.info("Before calling song service with request: {}", request);
-                songServiceClient.saveSongMetadata(request);
-            } catch (Exception e) {
-                log.error("Error processing resource {}", resourceId, e);
-            }
+            log.info("Received a message with resourceId: {}", resourceId);
+            ResponseEntity<byte[]> response = resourceServiceClient.getResource(resourceId);
+            byte[] resourceData = response.getBody();
+            SongMetadataRequest request =
+                    createSongRequestService.extractMetadata(resourceData, Integer.parseInt(resourceId));
+            log.info("Before calling song service with request: {}", request);
+            songServiceClient.saveSongMetadata(request);
         };
     }
 }
