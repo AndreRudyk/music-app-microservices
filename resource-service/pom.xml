@@ -60,12 +60,12 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-stream-rabbit</artifactId>
-            <version>${org.springframework.cloud.version}</version>
+            <version>${springframework.cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-stream-rabbit</artifactId>
-            <version>${org.springframework.cloud.version}</version>
+            <version>${springframework.cloud.version}</version>
         </dependency>
     </dependencies>
 
