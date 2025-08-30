@@ -6,14 +6,18 @@ server:
 spring:
   application:
     name: resource-processor
+  cloud:
+    stream:
+      bindings:
+        resourceUploaded-in-0:
+          destination: resource-uploaded
+          group: resource-processor-group
 
   rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    virtual-host: ${RABBITMQ_DEFAULT_VHOST:/}
+    host: ${RABBITMQ_HOST:rabbitmq}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USER:guest}
     password: ${RABBITMQ_PASSWORD:guest}
-    queue: resource-uploaded
 
 eureka:
   client:
