@@ -6,6 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import resourceservice.entity.ResourceEntity;
 import resourceservice.exception.ResourceNotFoundException;
+import resourceservice.feign.SongServiceClient;
 import resourceservice.repository.ResourceRepository;
 import resourceservice.service.S3Service;
 import resourceservice.service.ResourceService;
@@ -23,6 +24,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourceRepository resourceRepository;
     private final S3Service s3Service;
     private final ResourceUploadedProducer resourceUploadedProducer;
+    private final SongServiceClient songServiceClient;
 
     @Override
     public ResourceEntity saveResource(byte[] file) {
@@ -53,6 +55,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .map(ResourceEntity::getBucketKey)
                 .forEach(s3Service::deleteFile);
         resourceRepository.deleteAllByIdInBatch(existingIds);
+        songServiceClient.deleteSongMetadata(ids);
         return existingIds;
     }
 
