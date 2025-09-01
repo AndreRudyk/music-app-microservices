@@ -1,4 +1,4 @@
-package resourceservice.util;
+package util;
 
 public interface AudioTagUtils {
 

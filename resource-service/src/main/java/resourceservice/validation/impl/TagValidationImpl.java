@@ -13,7 +13,7 @@ import resourceservice.validation.TagValidation;
 import java.io.*;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static resourceservice.util.AudioTagUtils.*;
+import static util.AudioTagUtils.*;
 
 public class TagValidationImpl implements ConstraintValidator<TagValidation, byte[]> {
 

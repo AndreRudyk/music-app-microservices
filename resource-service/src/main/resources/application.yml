@@ -5,6 +5,17 @@ spring:
     multipart:
       max-file-size: 2MB
       max-request-size: 2MB
+  cloud:
+    stream:
+      bindings:
+        resourceUploaded-out-0:
+          destination: resource-uploaded
+      rabbit:
+        bindings:
+          resourceUploaded-out-0:
+            producer:
+              routing-key-expression: '''resource-uploaded'''
+
 
   datasource:
     url: ${RESOURCE_DB_URL:jdbc:postgresql://localhost:5432/resource-db}
@@ -17,13 +28,16 @@ spring:
     hibernate:
       ddl-auto: none
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
 server:
   port: 8080
   servlet:
     context-path: /resource-service
-
-song-service:
-  baseUrl: ${SONG_SERVICE_URL:http://localhost:8082}/song-service/api/v1/songs
 
 eureka:
   client:
