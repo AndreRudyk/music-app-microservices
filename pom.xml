@@ -21,6 +21,7 @@
         <springframework.cloud.version>4.2.0</springframework.cloud.version>
         <awssdk.version>2.20.111</awssdk.version>
         <pact.pactjunit5.version>4.6.8</pact.pactjunit5.version>
+        <testcontainers.version>1.19.7</testcontainers.version>
     </properties>
 
     <dependencyManagement>
