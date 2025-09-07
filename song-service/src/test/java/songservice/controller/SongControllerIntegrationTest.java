@@ -1,6 +1,9 @@
 package songservice.controller;
 
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SongControllerIntegrationTest {
 
     @Autowired
@@ -25,19 +29,10 @@ public class SongControllerIntegrationTest {
     @MockitoBean
     private ResourceServiceClient client;
 
-    private final String requestBody = """
-            {
-              "id": 1,
-              "name": "Test Song",
-              "artist": "Test Artist",
-              "album": "Test Album",
-              "duration": "01:30",
-              "year": 2020
-            }
-            """;
-
     @Test
+    @Order(1)
     void uploadSongMetadata_shouldSaveAndReturnMetadata() throws Exception {
+        String requestBody = buildRequestBody(1);
         mockMvc.perform(post("/api/v1/songs")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -47,41 +42,26 @@ public class SongControllerIntegrationTest {
     }
 
     @Test
+    @Order(2)
     void getSongMetadata_shouldReturnMetadata() throws Exception {
         when(client.existsResource(anyString())).thenReturn(ResponseEntity.ok(true));
 
-        String response = mockMvc.perform(post("/api/v1/songs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        mockMvc.perform(get("/api/v1/songs/1"))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        String id = response.replaceAll(".*\"id\":(\\d+).*", "$1");
-
-        mockMvc.perform(get("/api/v1/songs/" + id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(Integer.parseInt(id)))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Song"));
     }
 
     @Test
+    @Order(3)
     void deleteSongMetadata_shouldDeleteMetadata() throws Exception {
-        when(client.existsResource(anyString())).thenReturn(ResponseEntity.ok(true));
-
-        String response = mockMvc.perform(post("/api/v1/songs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        mockMvc.perform(delete("/api/v1/songs?id=1"))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        String id = response.replaceAll(".*\"id\":(\\d+).*", "$1");
-
-        mockMvc.perform(delete("/api/v1/songs?id=" + id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ids[0]").value(Integer.parseInt(id)));
+                .andExpect(jsonPath("$.ids[0]").value("1"));
     }
 
     @Test
+    @Order(4)
     void getSongMetadataWhenSongNonExistent_returns404() throws Exception {
         when(client.existsResource(anyString())).thenReturn(ResponseEntity.ok(false));
 
@@ -89,5 +69,18 @@ public class SongControllerIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorMessage").value("Resource with ID=1 not found"))
                 .andExpect(jsonPath("$.errorCode").value(404));
+    }
+
+    private String buildRequestBody(int id) {
+        return """
+                {
+                  "id": %d,
+                  "name": "Test Song",
+                  "artist": "Test Artist",
+                  "album": "Test Album",
+                  "duration": "01:30",
+                  "year": 2020
+                }
+                """.formatted(id);
     }
 }

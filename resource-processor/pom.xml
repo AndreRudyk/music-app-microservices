@@ -56,6 +56,17 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-aop</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>au.com.dius.pact.consumer</groupId>
+      <artifactId>junit5</artifactId>
+      <version>${pact.pactjunit5.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -70,6 +81,14 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>au.com.dius.pact.provider</groupId>
+        <artifactId>maven</artifactId>
+        <version>4.6.8</version>
+        <configuration>
+          <pactDirectory>src/test/resources/contracts</pactDirectory>
+        </configuration>
       </plugin>
     </plugins>
   </build>
