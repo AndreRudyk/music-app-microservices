@@ -20,6 +20,9 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine-3.21
 WORKDIR /app
 
+# Install curl
+RUN apk add --no-cache curl
+
 # Copy the built jar file
 COPY --from=build /app/song-service/target/*.jar app.jar
 

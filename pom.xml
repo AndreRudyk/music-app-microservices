@@ -22,6 +22,7 @@
         <awssdk.version>2.20.111</awssdk.version>
         <pact.pactjunit5.version>4.6.8</pact.pactjunit5.version>
         <testcontainers.version>1.19.7</testcontainers.version>
+        <spring-actuator.version>3.4.2</spring-actuator.version>
     </properties>
 
     <dependencyManagement>
@@ -83,6 +84,11 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-openfeign</artifactId>
                 <version>${springframework.cloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-actuator</artifactId>
+                <version>${spring-actuator.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
