@@ -6,11 +6,11 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -19,11 +19,11 @@ import org.testcontainers.containers.localstack.LocalStackContainer;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 public class ResourceUploadStepDefs extends CucumberSpringConfiguration {
 
     private static final String TEST_DATA_FOLDER = "src/test/resources/test-data/";
@@ -60,7 +60,7 @@ public class ResourceUploadStepDefs extends CucumberSpringConfiguration {
         assertThat(rabbitTemplate).isNotNull();
         assertThat(amqpAdmin).isNotNull();
         assertThat(localStackContainer.isRunning()).isTrue();
-        System.out.println("Resource service is running with RabbitMQ and LocalStack S3");
+        log.info("Resource service is running with RabbitMQ and LocalStack S3");
     }
 
     @When("I upload a valid audio file")
@@ -77,7 +77,7 @@ public class ResourceUploadStepDefs extends CucumberSpringConfiguration {
         JsonNode jsonNode = objectMapper.readTree(responseJson);
         resourceId = jsonNode.get("id").asInt();
 
-        System.out.println("Resource uploaded with ID: " + resourceId);
+        log.info("Resource uploaded with ID: {}", resourceId);
     }
 
     @Then("the resource should be saved successfully")
@@ -98,7 +98,7 @@ public class ResourceUploadStepDefs extends CucumberSpringConfiguration {
         String messageBody = new String(receivedMessage.getBody());
         assertThat(messageBody).isEqualTo(resourceId.toString());
 
-        System.out.println("Message received from RabbitMQ: " + messageBody);
+        log.info("Message received from RabbitMQ: {}", messageBody);
     }
 
     @Then("the resource processor should be able to retrieve the resource")
@@ -114,6 +114,6 @@ public class ResourceUploadStepDefs extends CucumberSpringConfiguration {
         byte[] resourceData = getResourceResult.getResponse().getContentAsByteArray();
         assertThat(resourceData).isNotEmpty();
 
-        System.out.println("Resource processor successfully retrieved resource data");
+        log.info("Resource processor successfully retrieved resource data");
     }
 }
