@@ -2,6 +2,9 @@
 FROM maven:3.9.9-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 
+# Install curl in Alpine
+RUN apk add --no-cache curl
+
 # Copy the parent POM and full source code for correct Maven context
 COPY . /app
 
@@ -19,6 +22,9 @@ RUN mvn clean package -DskipTests
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine-3.21
 WORKDIR /app
+
+# Install curl
+RUN apk add --no-cache curl
 
 # Copy the built jar file
 COPY --from=build /app/resource-service/target/*.jar app.jar
