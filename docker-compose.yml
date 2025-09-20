@@ -92,6 +92,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: song-service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/song-service/actuator/health"]
       interval: 30s
@@ -139,3 +140,21 @@ services:
         condition: service_healthy
       resource-service:
         condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      - EUREKA_HOST=${EUREKA_HOST}
+    depends_on:
+      - service-registry
+      - song-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
