@@ -1,0 +1,47 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # Enable discovery for other services
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+          # Exclude song-service from auto-generated routes
+          include-expression: "serviceId != 'SONG-SERVICE' && serviceId != 'RESOURCE-SERVICE'"
+      routes:
+        - id: song-service
+          uri: lb://song-service
+          predicates:
+            - Path=/song-service/**
+          filters: []
+          order: -1   # ensures this route matches before discovery-locator-generated ones
+        - id: resource-service
+          uri: lb://resource-service
+          predicates:
+            - Path=/resource-service/**
+          filters: []
+          order: -1   # ensures this route matches before discovery-locator-generated ones
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    preferIpAddress: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    gateway:
+      enabled: true
