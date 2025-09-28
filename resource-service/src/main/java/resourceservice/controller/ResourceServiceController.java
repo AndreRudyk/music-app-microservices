@@ -27,7 +27,7 @@ public class ResourceServiceController {
 
     @PostMapping(consumes = "audio/mpeg")
     public ResponseEntity<ResourceResponse> uploadResource(@RequestBody @TagValidation byte[] file) {
-        ResourceEntity uploadedEntity = resourceService.saveResource(file);
+        ResourceEntity uploadedEntity = resourceService.saveResourceToStaging(file);
         return ResponseEntity.ok(new ResourceResponse(uploadedEntity.getId()));
     }
 
@@ -44,8 +44,9 @@ public class ResourceServiceController {
     }
 
     @DeleteMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DeleteResourceResponse> deleteResource(@RequestParam("id") @ValidIdsCsv(maxLength = 100) String ids) {
-        List<Integer> deletedIds = resourceService.deleteByIds(ids);
+    public ResponseEntity<DeleteResourceResponse> deleteResource(@RequestParam("id") @ValidIdsCsv(maxLength = 100) String ids,
+                                                                 @RequestParam("bucket") String bucket) {
+        List<Integer> deletedIds = resourceService.deleteByIds(ids, bucket);
         return ResponseEntity.ok(DeleteResourceResponse.builder().ids(deletedIds).build());
     }
 

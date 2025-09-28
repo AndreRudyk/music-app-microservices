@@ -22,6 +22,8 @@ public class ResourceUploadedListener {
 
     private final ResourceServiceClient resourceServiceClient;
 
+    private final ResourceProcessedProducer resourceProcessedProducer;
+
     @Bean
     public Consumer<String> resourceUploaded() {
         return resourceId -> {
@@ -32,6 +34,8 @@ public class ResourceUploadedListener {
                     createSongRequestService.extractMetadata(resourceData, Integer.parseInt(resourceId));
             log.info("Before calling song service with request: {}", request);
             songServiceClient.saveSongMetadata(request);
+            log.info("Publishing processed resource ID: {}", resourceId);
+            resourceProcessedProducer.sendProcessedResourceId(resourceId);
         };
     }
 }

@@ -18,6 +18,13 @@ spring:
             backOffMaxInterval: 10000
             backOffMultiplier: 2.0
             defaultRetryable: true
+        resourceProcessed-out-0:
+          destination: resource-processed
+      rabbit:
+        bindings:
+          resourceProcessed-out-0:
+            producer:
+              routing-key-expression: '''resource-processed'''
 
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}

@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import resourceservice.entity.ResourceEntity;
+import resourceservice.entity.StorageType;
 import resourceservice.exception.ResourceNotFoundException;
 import resourceservice.feign.SongServiceClient;
 import resourceservice.messaging.ResourceUploadedProducer;
@@ -49,22 +50,22 @@ class ResourceServiceImplTest {
     @InjectMocks private ResourceServiceImpl resourceService;
 
     @Test
-    void saveResource_savesAndUploadsAndSends() {
+    void saveResource_ToStaging_savesAndUploadsAndSends() {
         byte[] file = new byte[]{1,2,3};
         String bucketKey = UUID.randomUUID().toString() + ".mp3";
         String fileUrl = "http://s3/file.mp3";
-        ResourceEntity entity = new ResourceEntity(bucketKey, fileUrl);
+        ResourceEntity entity = new ResourceEntity(bucketKey, fileUrl, StorageType.STAGING);
         Integer integer = new Random().nextInt();
         entity.setId(integer);
-        when(s3Service.getFileUrl(anyString())).thenReturn(fileUrl);
+        when(s3Service.getFileUrl(anyString(), eq("s3"))).thenReturn(fileUrl);
         when(resourceRepository.save(any())).thenReturn(entity);
 
-        ResourceEntity result = resourceService.saveResource(file);
+        ResourceEntity result = resourceService.saveResourceToStaging(file);
 
         assertEquals(fileUrl, result.getFileUrl());
-        verify(s3Service).getFileUrl(anyString());
+        verify(s3Service).getFileUrl(anyString(), eq("s3"));
         verify(resourceRepository).save(any(ResourceEntity.class));
-        verify(s3Service).uploadFile(anyString(), eq(file));
+        verify(s3Service).uploadFile(anyString(), eq(file), eq("s3"));
         verify(resourceUploadedProducer).sendResourceId(anyString());
     }
 
@@ -73,16 +74,16 @@ class ResourceServiceImplTest {
         int id = 1;
         String bucketKey = "key";
         byte[] file = new byte[]{1};
-        ResourceEntity entity = new ResourceEntity(bucketKey, "url");
+        ResourceEntity entity = new ResourceEntity(bucketKey, "url", StorageType.PERMANENT);
         when(resourceRepository.findById(id)).thenReturn(Optional.of(entity));
-        when(s3Service.downloadFile(bucketKey)).thenReturn(file);
+        when(s3Service.downloadFile(bucketKey, "staging-bucket")).thenReturn(file);
 
         Pair<String, byte[]> result = resourceService.getResourceById(id);
 
         assertEquals(bucketKey, result.getLeft());
         assertArrayEquals(file, result.getRight());
         verify(resourceRepository).findById(id);
-        verify(s3Service).downloadFile(bucketKey);
+        verify(s3Service).downloadFile(bucketKey, "staging-bucket");
     }
 
     @Test
@@ -101,16 +102,16 @@ class ResourceServiceImplTest {
         when(resourceRepository.existsById(2)).thenReturn(true);
         List<ResourceEntity> resourceEntities = generateResources(2);
         when(resourceRepository.findAllById(List.of(1, 2))).thenReturn(resourceEntities);
-        doNothing().when(s3Service).deleteFile(anyString());
+        doNothing().when(s3Service).deleteFile(anyString(), anyString());
         doNothing().when(resourceRepository).deleteAllByIdInBatch(List.of(1, 2));
 
-        List<Integer> resultIds = resourceService.deleteByIds(ids);
+        List<Integer> resultIds = resourceService.deleteByIds(ids, "s3");
 
         assertEquals(resultIds, List.of(1, 2));
         verify(resourceRepository).existsById(1);
         verify(resourceRepository).existsById(2);
         verify(resourceRepository).findAllById(List.of(1, 2));
-        verify(s3Service, times(2)).deleteFile(anyString());
+        verify(s3Service, times(2)).deleteFile(anyString(), anyString());
         verify(resourceRepository).deleteAllByIdInBatch(List.of(1, 2));
     }
 

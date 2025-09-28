@@ -158,3 +158,42 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  storage-service:
+    build:
+      context: .
+      dockerfile: ./storage-service/Dockerfile-storage
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: ${STORAGE_DB_URL}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+#      storage-db:
+#        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      service-registry:
+        condition: service_started
+      localstack:
+        condition: service_healthy
+
+  storage-db:
+    image: postgres:17-alpine3.20
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_STORAGE}
+      POSTGRES_USER: ${POSTGRES_USER_STORAGE}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_STORAGE}
+    ports:
+      - "5434:5434"
+    volumes:
+      - ./init-scripts/storage-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER_STORAGE} -d ${POSTGRES_DB_STORAGE} -h localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
