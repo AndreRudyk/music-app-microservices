@@ -89,6 +89,7 @@ public class ResourceServiceImpl implements ResourceService {
     public void updateStorageTypeByResourceId(String resourceId, StorageType storageType) {
         ResourceEntity storedResourceEntity = resourceRepository.findById(Integer.valueOf(resourceId))
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
+        StorageType storedStorageType = storedResourceEntity.getStorageType();
 
         ResponseEntity<StorageResponse> currentStorageResponseEntity
                 = storageServiceWrapper.getStorageByType(storedResourceEntity.getStorageType().name());
@@ -111,5 +112,7 @@ public class ResourceServiceImpl implements ResourceService {
         String fileUrl = s3Service.getFileUrl(storedResourceEntity.getBucketKey(), storageResponse.getBucket());
         storedResourceEntity.setFileUrl(fileUrl);
         resourceRepository.save(storedResourceEntity);
+        log.info("Resource with id {} changed storageType from {} to {}", resourceId, storedStorageType,
+                storageType);
     }
 }
