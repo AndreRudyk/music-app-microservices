@@ -12,16 +12,16 @@ import resourceservice.entity.StorageType;
 import resourceservice.exception.ResourceNotFoundException;
 import resourceservice.feign.SongServiceClient;
 import resourceservice.feign.StorageServiceClient;
+import resourceservice.messaging.ResourceUploadedProducer;
 import resourceservice.repository.ResourceRepository;
 import resourceservice.service.S3Service;
 import resourceservice.service.ResourceService;
-import resourceservice.messaging.ResourceUploadedProducer;
+import resourceservice.service.StorageServiceWrapper;
 import resourceservice.util.UrlParser;
 import response.storage.StorageResponse;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static resourceservice.entity.StorageType.STAGING;
@@ -36,12 +36,13 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourceUploadedProducer resourceUploadedProducer;
     private final SongServiceClient songServiceClient;
     private final StorageServiceClient storageServiceClient;
+    private final StorageServiceWrapper storageServiceWrapper;
 
     @Override
     public ResourceEntity saveResourceToStaging(byte[] file) {
         String bucketKey = UUID.randomUUID().toString() + ".mp3";
         log.info("Saving file : {}", bucketKey);
-        ResponseEntity<StorageResponse> storage = storageServiceClient.getStorageByType(STAGING.name());
+        ResponseEntity<StorageResponse> storage = storageServiceWrapper.getStorageByType(STAGING.name());
         StorageResponse storageResponse = storage.getBody();
         assert storageResponse != null;
         String bucketName = storageResponse.getBucket();
@@ -90,12 +91,12 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
 
         ResponseEntity<StorageResponse> currentStorageResponseEntity
-                = storageServiceClient.getStorageByType(storedResourceEntity.getStorageType().name());
+                = storageServiceWrapper.getStorageByType(storedResourceEntity.getStorageType().name());
         StorageResponse storedStorageResponse = currentStorageResponseEntity.getBody();
         assert storedStorageResponse != null;
 
         ResponseEntity<StorageResponse> storageResponseEntity
-                = storageServiceClient.getStorageByType(storageType.name());
+                = storageServiceWrapper.getStorageByType(storageType.name());
         StorageResponse storageResponse = storageResponseEntity.getBody();
         assert storageResponse != null;
         if (!s3Service.bucketExists(storageResponse.getBucket())) {

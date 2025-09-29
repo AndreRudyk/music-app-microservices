@@ -61,3 +61,43 @@ aws:
   region: us-east-1
   access-key-id: test
   secret-access-key: test
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      storageService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - feign.FeignException
+    configs:
+      default:
+        slidingWindowSize: 100
+        minimumNumberOfCalls: 10
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  health:
+    circuitbreakers:
+      enabled: true
+    group:
+      custom:
+        include: circuitBreakers
+        show-components: always
+        show-details: always
