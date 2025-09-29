@@ -36,7 +36,6 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourceUploadedProducer resourceUploadedProducer;
     private final SongServiceClient songServiceClient;
     private final StorageServiceClient storageServiceClient;
-    private final static String STATIC_BUCKET_NAME = "staging-bucket";
 
     @Override
     public ResourceEntity saveResourceToStaging(byte[] file) {
@@ -108,6 +107,8 @@ public class ResourceServiceImpl implements ResourceService {
         s3Service.deleteFile(storedResourceEntity.getBucketKey(), storedStorageResponse.getBucket());
 
         storedResourceEntity.setStorageType(storageType);
+        String fileUrl = s3Service.getFileUrl(storedResourceEntity.getBucketKey(), storageResponse.getBucket());
+        storedResourceEntity.setFileUrl(fileUrl);
         resourceRepository.save(storedResourceEntity);
     }
 }
