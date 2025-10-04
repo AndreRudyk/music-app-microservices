@@ -49,8 +49,8 @@ ResourceServiceControllerIntegrationTest {
 
     @Test
     void uploadResource_endpointSavesResourceAndReturnsId() throws Exception {
-        when(s3Service.getFileUrl(anyString())).thenReturn("http://mock-s3/file.mp3");
-        doNothing().when(s3Service).uploadFile(anyString(), any());
+        when(s3Service.getFileUrl(anyString(), anyString())).thenReturn("http://mock-s3/file.mp3");
+        doNothing().when(s3Service).uploadFile(anyString(), any(), anyString());
         doNothing().when(resourceUploadedProducer).sendResourceId(anyString());
         byte[] file = Files.readAllBytes(Paths.get(TEST_DATA_FOLDER + "valid-sample-with-required-tags.mp3"));
 
@@ -64,14 +64,14 @@ ResourceServiceControllerIntegrationTest {
         Integer id = objectMapper.readTree(responseJson).get("id").asInt();
         assertThat(id).isNotNull();
         assertThat(resourceRepository.findById(id)).isPresent();
-        verify(s3Service).uploadFile(anyString(), any());
+        verify(s3Service).uploadFile(anyString(), any(), anyString());
         verify(resourceUploadedProducer).sendResourceId(anyString());
     }
 
     @Test
     void uploadResourceWhenSongFileInvalid_returns400() throws Exception {
-        when(s3Service.getFileUrl(anyString())).thenReturn("http://mock-s3/file.mp3");
-        doNothing().when(s3Service).uploadFile(anyString(), any());
+        when(s3Service.getFileUrl(anyString(), anyString())).thenReturn("http://mock-s3/file.mp3");
+        doNothing().when(s3Service).uploadFile(anyString(), any(), anyString());
         doNothing().when(resourceUploadedProducer).sendResourceId(anyString());
         byte[] file = Files.readAllBytes(Paths.get(TEST_DATA_FOLDER + "invalid-sample-with-missed-tags.mp3"));
 

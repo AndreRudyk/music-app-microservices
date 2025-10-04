@@ -18,8 +18,12 @@ public class ResourceEntity {
 
     private String fileUrl;
 
-    public ResourceEntity(String bucketKey, String fileUrlUrl) {
+    @Enumerated(EnumType.STRING)
+    private StorageType storageType;
+
+    public ResourceEntity(String bucketKey, String fileUrlUrl, StorageType storageType) {
         this.bucketKey = bucketKey;
         this.fileUrl = fileUrlUrl;
+        this.storageType = storageType;
     }
 }

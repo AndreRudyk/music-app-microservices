@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -36,12 +37,12 @@ class ResourceServiceComponentTest {
     private SongServiceClient songServiceClient;
 
     @Test
-    void saveResource_savesEntityToDatabase() {
+    void saveResource_ToStaging_savesEntityToDatabase() {
         byte[] dummyFile = new byte[]{1, 2, 3};
         String dummyUrl = "http://dummy-url";
-        when(s3Service.getFileUrl(any())).thenReturn(dummyUrl);
+        when(s3Service.getFileUrl(any(), any())).thenReturn(dummyUrl);
 
-        ResourceEntity saved = resourceService.saveResource(dummyFile);
+        ResourceEntity saved = resourceService.saveResourceToStaging(dummyFile);
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getBucketKey()).isNotNull();
@@ -57,8 +58,8 @@ class ResourceServiceComponentTest {
     void resourceExists_returnsTrueForExistingResource() {
         byte[] dummyFile = new byte[]{4, 5, 6};
         String dummyUrl = "http://dummy-url-2";
-        when(s3Service.getFileUrl(any())).thenReturn(dummyUrl);
-        ResourceEntity saved = resourceService.saveResource(dummyFile);
+        when(s3Service.getFileUrl(any(), any())).thenReturn(dummyUrl);
+        ResourceEntity saved = resourceService.saveResourceToStaging(dummyFile);
 
         boolean exists = resourceService.resourceExists(saved.getId().toString());
 
@@ -69,14 +70,14 @@ class ResourceServiceComponentTest {
     void deleteByIds_deletesExistingResource() {
         byte[] dummyFile = new byte[]{4, 5, 6};
         String dummyUrl = "http://dummy-url-2";
-        when(s3Service.getFileUrl(any())).thenReturn(dummyUrl);
+        when(s3Service.getFileUrl(any(), any())).thenReturn(dummyUrl);
 
-        ResourceEntity saved = resourceService.saveResource(dummyFile);
+        ResourceEntity saved = resourceService.saveResourceToStaging(dummyFile);
 
         boolean exists = resourceService.resourceExists(saved.getId().toString());
         assertThat(exists).isTrue();
 
-        resourceService.deleteByIds(saved.getId().toString());
+        resourceService.deleteByIds(saved.getId().toString(), "staging-bucket");
         boolean result = resourceService.resourceExists(saved.getId().toString());
 
         assertThat(result).isFalse();

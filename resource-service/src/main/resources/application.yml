@@ -10,11 +10,23 @@ spring:
       bindings:
         resourceUploaded-out-0:
           destination: resource-uploaded
+        resourceProcessed-in-0:
+          destination: resource-processed
+          group: resource-service-group
+          consumer:
+            maxAttempts: 3
+            backOffInitialInterval: 1000
+            backOffMaxInterval: 10000
+            backOffMultiplier: 2.0
+            defaultRetryable: true
       rabbit:
         bindings:
           resourceUploaded-out-0:
             producer:
               routing-key-expression: '''resource-uploaded'''
+          resourceProcessed-in-0:
+            consumer:
+              binding-routing-key: resource-processed
 
 
   datasource:
@@ -49,5 +61,43 @@ aws:
   region: us-east-1
   access-key-id: test
   secret-access-key: test
-  buckets:
-    resource: file-bucket
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      storageService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+          - feign.FeignException
+    configs:
+      default:
+        slidingWindowSize: 100
+        minimumNumberOfCalls: 10
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  health:
+    circuitbreakers:
+      enabled: true
+    group:
+      custom:
+        include: circuitBreakers
+        show-components: always
+        show-details: always

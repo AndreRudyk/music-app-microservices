@@ -9,19 +9,22 @@ COPY . /app
 RUN mvn install -DskipTests
 
 # Cache Maven dependencies specific to the submodule
-WORKDIR /app/eureka-service-registry
+WORKDIR /app/storage-service
 RUN mvn dependency:go-offline
 
 # Build the submodule
-COPY ./api-gateway/src /app/api-gateway/src
+COPY ./storage-service/src /app/storage-service/src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine-3.21
 WORKDIR /app
 
-# Copy the built jar file
-COPY --from=build /app/api-gateway/target/*.jar app.jar
+# Install curl
+RUN apk add --no-cache curl
 
-EXPOSE 8090
+# Copy the built jar file
+COPY --from=build /app/storage-service/target/*.jar app.jar
+
+EXPOSE 8084
 CMD ["java", "-jar", "app.jar"]

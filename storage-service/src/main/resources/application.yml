@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: storage-service
+
+  datasource:
+    url: ${STORAGE_DB_URL:jdbc:postgresql://localhost:5434/storage-db}
+    driverClassName: org.postgresql.Driver
+    username: ${POSTGRES_USER_STORAGE:user8084}
+    password: ${POSTGRES_PASSWORD_STORAGE:password8084}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+
+server:
+  port: 8084
+  servlet:
+    context-path: /storage-service
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

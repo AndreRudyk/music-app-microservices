@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "storage_type": "STAGING",
+    "bucket": "staging-bucket",
+    "path": " http://localstack:4566/staging-bucket"
+  },
+  {
+    "id": 2,
+    "storage_type": "PERMANENT",
+    "bucket": "permanent-bucket",
+    "path": " http://localstack:4566/permanent-bucket"
+  }
+]

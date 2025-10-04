@@ -20,30 +20,19 @@ public class S3ServiceImpl implements S3Service {
 
     private final AwsProperties awsProperties;
 
-    @PostConstruct
-    public void createIfNoBucketExists() {
-        try {
-            s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(awsProperties.getBucketName())
-                    .build());
-        } catch (BucketAlreadyExistsException | BucketAlreadyOwnedByYouException ex) {
-            log.warn("Bucket already exists. Message: {}", ex.getMessage());
-        }
-    }
-
     @Override
-    public void uploadFile(String key, byte[] bytes) {
+    public void uploadFile(String key, byte[] bytes, String bucketName) {
         s3Client.putObject(PutObjectRequest.builder()
-                .bucket(awsProperties.getBucketName())
+                .bucket(bucketName)
                 .key(key)
                 .build(), software.amazon.awssdk.core.sync.RequestBody.fromBytes(bytes));
     }
 
     @Override
-    public byte[] downloadFile(String key) {
+    public byte[] downloadFile(String key, String bucketName) {
         try {
             return s3Client.getObject(GetObjectRequest.builder()
-                    .bucket(awsProperties.getBucketName())
+                    .bucket(bucketName)
                     .key(key)
                     .build()).readAllBytes();
         } catch (IOException e) {
@@ -53,15 +42,36 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public void deleteFile(String key) {
+    public void deleteFile(String key, String bucketName) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
-                .bucket(awsProperties.getBucketName())
+                .bucket(bucketName)
                 .key(key)
                 .build());
     }
 
     @Override
-    public String getFileUrl(String s3key) {
-        return awsProperties.getEndpoint() + "/" + awsProperties.getBucketName() + "/" + s3key;
+    public String getFileUrl(String s3key, String bucketName) {
+        return awsProperties.getEndpoint() + "/" + bucketName + "/" + s3key;
+    }
+
+    @Override
+    public boolean bucketExists(String bucketName) {
+        try {
+            s3Client.headBucket(request -> request.bucket(bucketName));
+            return true;
+        } catch (NoSuchBucketException exception) {
+            return false;
+        }
+    }
+
+    @Override
+    public void createBucket(String bucketName) {
+        try {
+            s3Client.createBucket(CreateBucketRequest.builder()
+                    .bucket(bucketName)
+                    .build());
+        } catch (BucketAlreadyExistsException | BucketAlreadyOwnedByYouException ex) {
+            log.warn("Bucket already exists. Message: {}", ex.getMessage());
+        }
     }
 }

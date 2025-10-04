@@ -8,9 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class AwsProperties {
 
-    @Value("${aws.buckets.resource}")
-    private String bucketName;
-
     @Value("${aws.endpoint}")
     private String endpoint;
 
