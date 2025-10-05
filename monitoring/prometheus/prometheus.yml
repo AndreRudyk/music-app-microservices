@@ -40,3 +40,28 @@ scrape_configs:
     metrics_path: 'storage-service/actuator/prometheus'
     static_configs:
       - targets: ['storage-service:8084']
+
+  - job_name: 'gateway-routed-resource-service'
+    metrics_path: '/metrics/resource-service/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-song-service'
+    metrics_path: '/metrics/song-service/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-storage-service'
+    metrics_path: '/metrics/storage-service/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-resource-processor'
+    metrics_path: '/metrics/resource-processor/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-eureka'
+    metrics_path: '/metrics/eureka/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
