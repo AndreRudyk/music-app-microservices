@@ -51,16 +51,40 @@ server:
   servlet:
     context-path: /resource-service
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    resourceservice: INFO
+    org.springframework: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka
-
-aws:
-  endpoint: ${AWS_S3_ENDPOINT:http://localhost:4566}
-  region: us-east-1
-  access-key-id: test
-  secret-access-key: test
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
 
 resilience4j:
   circuitbreaker:
@@ -84,20 +108,8 @@ resilience4j:
         slidingWindowSize: 100
         minimumNumberOfCalls: 10
 
-management:
-  endpoint:
-    health:
-      show-details: always
-  endpoints:
-    web:
-      exposure:
-        include: health
-
-  health:
-    circuitbreakers:
-      enabled: true
-    group:
-      custom:
-        include: circuitBreakers
-        show-components: always
-        show-details: always
+aws:
+  endpoint: ${AWS_S3_ENDPOINT:http://localhost:4566}
+  region: us-east-1
+  access-key-id: test
+  secret-access-key: test

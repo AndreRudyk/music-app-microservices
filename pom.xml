@@ -23,6 +23,8 @@
         <pact.pactjunit5.version>4.6.8</pact.pactjunit5.version>
         <testcontainers.version>1.19.7</testcontainers.version>
         <spring-actuator.version>3.4.2</spring-actuator.version>
+        <micrometer.prometheus.version>1.12.1</micrometer.prometheus.version>
+        <logback.loki.version>1.5.0</logback.loki.version>
     </properties>
 
     <dependencyManagement>
@@ -99,6 +101,16 @@
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>s3</artifactId>
                 <version>${awssdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${micrometer.prometheus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.loki4j</groupId>
+                <artifactId>loki-logback-appender</artifactId>
+                <version>${logback.loki.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
