@@ -91,7 +91,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,info,metrics,prometheus
 
   health:
     circuitbreakers:
@@ -101,3 +101,12 @@ management:
         include: circuitBreakers
         show-components: always
         show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  level:
+    org.springframework.boot.actuate: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId:-}] %-5level [%thread] %logger{36} - %msg%n"
