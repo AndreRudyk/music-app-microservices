@@ -94,9 +94,13 @@ management:
 
 logging:
   level:
-    apigateway: INFO
-    org.springframework: INFO
-    org.springframework.cloud.gateway: DEBUG
+    root: OFF  # Suppress all console logging for API Gateway
+    apigateway: OFF
+    org.springframework: OFF
+    org.springframework.cloud.gateway: OFF
+    org.springframework.boot: OFF
+    reactor: OFF
+    io.netty: OFF
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+    console: ""  # Empty console pattern to prevent any console output
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"

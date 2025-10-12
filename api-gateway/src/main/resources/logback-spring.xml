@@ -2,14 +2,15 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <!-- Console appender -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- File appender (optional - for debugging if needed) -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/api-gateway.log</file>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] [%X{traceId}] - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Loki appender -->
+    <!-- Loki appender (keep for centralized logging) -->
     <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
         <http>
             <url>http://loki:3100/loki/api/v1/push</url>
@@ -24,14 +25,17 @@
         </format>
     </appender>
 
-    <!-- Root logger -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
+    <!-- Root logger - NO CONSOLE APPENDER, only file and loki -->
+    <root level="OFF">
+        <appender-ref ref="FILE"/>
         <appender-ref ref="LOKI"/>
     </root>
 
-    <!-- Service specific loggers -->
-    <logger name="apigateway" level="INFO"/>
-    <logger name="org.springframework" level="INFO"/>
-    <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
+    <!-- Suppress all service specific loggers -->
+    <logger name="apigateway" level="OFF"/>
+    <logger name="org.springframework" level="OFF"/>
+    <logger name="org.springframework.cloud.gateway" level="OFF"/>
+    <logger name="org.springframework.boot" level="OFF"/>
+    <logger name="reactor" level="OFF"/>
+    <logger name="io.netty" level="OFF"/>
 </configuration>

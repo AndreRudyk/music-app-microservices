@@ -119,9 +119,9 @@
                 <version>${io.micrometer.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>context-propagation</artifactId>
-                <version>${micrometer.context-propagation.version}</version>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-stream-rabbit</artifactId>
+                <version>${springframework.cloud.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -25,6 +25,9 @@ spring:
           resourceProcessed-out-0:
             producer:
               routing-key-expression: '''resource-processed'''
+    openfeign:
+      micrometer:
+        enabled: true
 
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
