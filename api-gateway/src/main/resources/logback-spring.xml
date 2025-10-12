@@ -5,7 +5,7 @@
     <!-- Console appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] [%X{traceId}] - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -19,7 +19,7 @@
                 <pattern>service=api-gateway,level=%level</pattern>
             </label>
             <message>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] [traceId=%X{traceId}] - %msg%n</pattern>
             </message>
         </format>
     </appender>

@@ -42,6 +42,10 @@
             <groupId>com.github.loki4j</groupId>
             <artifactId>loki-logback-appender</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
