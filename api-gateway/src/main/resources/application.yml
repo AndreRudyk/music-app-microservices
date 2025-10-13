@@ -7,6 +7,8 @@ spring:
 
   cloud:
     gateway:
+      metrics:
+        enabled: true
       # Enable discovery for other services
       discovery:
         locator:
@@ -74,6 +76,9 @@ eureka:
     preferIpAddress: false
 
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:
@@ -88,19 +93,42 @@ management:
     health:
       show-details: always
   metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        spring.cloud.gateway.requests: true
+      slo:
+        http.server.requests: 10ms,50ms,100ms,200ms,500ms,1s,2s
+        spring.cloud.gateway.requests: 10ms,50ms,100ms,200ms,500ms,1s,2s
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
     export:
       prometheus:
         enabled: true
+    enable:
+      http: true
+      jvm: true
+      process: true
+      system: true
+      web: true
 
 logging:
   level:
-    root: OFF  # Suppress all console logging for API Gateway
+    root: WARN  # Changed from OFF to WARN to allow metrics collection
     apigateway: OFF
-    org.springframework: OFF
-    org.springframework.cloud.gateway: OFF
-    org.springframework.boot: OFF
+    org.springframework: WARN  # Allow minimal Spring logging for metrics
+    org.springframework.cloud.gateway: INFO  # Enable Gateway metrics collection
+    org.springframework.boot: WARN
     reactor: OFF
     io.netty: OFF
+    # Enable metrics-specific logging
+    io.micrometer: INFO
+    org.springframework.boot.actuate: INFO
   pattern:
-    console: ""  # Empty console pattern to prevent any console output
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n"
+    console: ""  # Keep console pattern empty to suppress terminal output
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] [%X{traceId}] - %msg%n"
+  file:
+    name: logs/api-gateway.log

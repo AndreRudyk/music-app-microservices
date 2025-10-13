@@ -25,17 +25,17 @@
         </format>
     </appender>
 
-    <!-- Root logger - NO CONSOLE APPENDER, only file and loki -->
-    <root level="OFF">
+    <!-- Root logger - Send to file and loki, but allow some logging -->
+    <root level="WARN">
         <appender-ref ref="FILE"/>
         <appender-ref ref="LOKI"/>
     </root>
 
-    <!-- Suppress all service specific loggers -->
-    <logger name="apigateway" level="OFF"/>
-    <logger name="org.springframework" level="OFF"/>
-    <logger name="org.springframework.cloud.gateway" level="OFF"/>
-    <logger name="org.springframework.boot" level="OFF"/>
-    <logger name="reactor" level="OFF"/>
-    <logger name="io.netty" level="OFF"/>
+    <!-- Allow minimal logging for important events -->
+    <logger name="apigateway" level="INFO"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.cloud.gateway" level="INFO"/>
+    <logger name="org.springframework.boot" level="WARN"/>
+    <logger name="reactor" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
 </configuration>
