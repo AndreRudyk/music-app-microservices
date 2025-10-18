@@ -7,6 +7,8 @@ spring:
 
   cloud:
     gateway:
+      metrics:
+        enabled: true
       # Enable discovery for other services
       discovery:
         locator:
@@ -27,6 +29,42 @@ spring:
             - Path=/resource-service/**
           filters: []
           order: -1   # ensures this route matches before discovery-locator-generated ones
+        # Monitoring routes - expose metrics endpoints through API Gateway
+        - id: resource-service-metrics
+          uri: lb://resource-service
+          predicates:
+            - Path=/metrics/resource-service/**
+          filters:
+            - RewritePath=/metrics/resource-service/(?<path>.*), /resource-service/$\{path}
+          order: -2
+        - id: song-service-metrics
+          uri: lb://song-service
+          predicates:
+            - Path=/metrics/song-service/**
+          filters:
+            - RewritePath=/metrics/song-service/(?<path>.*), /song-service/$\{path}
+          order: -2
+        - id: storage-service-metrics
+          uri: lb://storage-service
+          predicates:
+            - Path=/metrics/storage-service/**
+          filters:
+            - RewritePath=/metrics/storage-service/(?<path>.*), /storage-service/$\{path}
+          order: -2
+        - id: resource-processor-metrics
+          uri: lb://resource-processor
+          predicates:
+            - Path=/metrics/resource-processor/**
+          filters:
+            - RewritePath=/metrics/resource-processor/(?<path>.*), /resource-processor/$\{path}
+          order: -2
+        - id: eureka-metrics
+          uri: lb://service-registry
+          predicates:
+            - Path=/metrics/eureka/**
+          filters:
+            - RewritePath=/metrics/eureka/(?<path>.*), /$\{path}
+          order: -2
 
 eureka:
   client:
@@ -38,10 +76,59 @@ eureka:
     preferIpAddress: false
 
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info,metrics,prometheus,gateway
   endpoint:
     gateway:
       enabled: true
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        spring.cloud.gateway.requests: true
+      slo:
+        http.server.requests: 10ms,50ms,100ms,200ms,500ms,1s,2s
+        spring.cloud.gateway.requests: 10ms,50ms,100ms,200ms,500ms,1s,2s
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+    export:
+      prometheus:
+        enabled: true
+    enable:
+      http: true
+      jvm: true
+      process: true
+      system: true
+      web: true
+
+logging:
+  level:
+    root: WARN  # Changed from OFF to WARN to allow metrics collection
+    apigateway: OFF
+    org.springframework: WARN  # Allow minimal Spring logging for metrics
+    org.springframework.cloud.gateway: INFO  # Enable Gateway metrics collection
+    org.springframework.boot: WARN
+    reactor: OFF
+    io.netty: OFF
+    # Enable metrics-specific logging
+    io.micrometer: INFO
+    org.springframework.boot.actuate: INFO
+  pattern:
+    console: ""  # Keep console pattern empty to suppress terminal output
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] [%X{traceId}] - %msg%n"
+  file:
+    name: logs/api-gateway.log

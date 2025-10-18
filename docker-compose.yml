@@ -50,6 +50,12 @@ services:
       - "8761:8761"
     environment:
       - EUREKA_HOST=service-registry
+    labels:
+      - "logging=promtail"
+      - "logging.jobname=eureka-service-registry"
+    networks:
+      - default
+      - monitoring
 
   resource-service:
     build:
@@ -80,6 +86,12 @@ services:
         condition: service_started
       localstack:
         condition: service_healthy
+    labels:
+      - "logging=promtail"
+      - "logging.jobname=resource-service"
+    networks:
+      - default
+      - monitoring
 
   song-service:
     build:
@@ -102,6 +114,12 @@ services:
     depends_on:
       - song-db
       - service-registry
+    labels:
+      - "logging=promtail"
+      - "logging.jobname=song-service"
+    networks:
+      - default
+      - monitoring
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -140,6 +158,12 @@ services:
         condition: service_healthy
       resource-service:
         condition: service_healthy
+    labels:
+      - "logging=promtail"
+      - "logging.jobname=resource-processor"
+    networks:
+      - default
+      - monitoring
 
   api-gateway:
     build:
@@ -158,6 +182,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    labels:
+      - "logging=promtail"
+      - "logging.jobname=api-gateway"
+    networks:
+      - default
+      - monitoring
 
   storage-service:
     build:
@@ -181,6 +211,12 @@ services:
         condition: service_started
       localstack:
         condition: service_healthy
+    labels:
+      - "logging=promtail"
+      - "logging.jobname=storage-service"
+    networks:
+      - default
+      - monitoring
 
   storage-db:
     image: postgres:17-alpine3.20
@@ -197,3 +233,72 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Monitoring Services
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring
+      - default
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki:/etc/loki
+    command: -config.file=/etc/loki/loki-local-config.yaml
+    networks:
+      - monitoring
+      - default
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    volumes:
+      - ./monitoring/promtail:/etc/promtail
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - monitoring
+      - default
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - monitoring
+      - default
+
+networks:
+  monitoring:
+    driver: bridge

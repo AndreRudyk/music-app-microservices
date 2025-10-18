@@ -23,12 +23,14 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public Storage createStorage(Storage storage) {
+        log.info("Create storage for storage: {}", storage);
         StorageEntity storageEntity = storageConverter.domainToEntity(storage);
         return storageConverter.entityToDomain(storageRepository.save(storageEntity));
     }
 
     @Override
     public List<Storage> getAllStorages() {
+        log.info("Get all storages");
         return storageRepository.findAll().stream()
                 .map(storageConverter::entityToDomain)
                 .toList();
@@ -36,6 +38,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public void deleteStorages(List<Integer> ids) {
+        log.info("Delete storage with ids: {}", ids);
         storageRepository.deleteAllByIdInBatch(ids);
     }
 

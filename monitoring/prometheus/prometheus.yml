@@ -1,0 +1,67 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'eureka-service-registry'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['service-registry:8761']
+
+  - job_name: 'resource-service'
+    metrics_path: '/resource-service/actuator/prometheus'
+    static_configs:
+      - targets: ['resource-service:8080']
+
+  - job_name: 'song-service'
+    metrics_path: '/song-service/actuator/prometheus'
+    static_configs:
+      - targets: ['song-service:8082']
+
+  - job_name: 'resource-processor'
+    metrics_path: 'resource-processor/actuator/prometheus'
+    static_configs:
+      - targets: ['resource-processor:8081']
+
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:8090']
+
+  - job_name: 'storage-service'
+    metrics_path: 'storage-service/actuator/prometheus'
+    static_configs:
+      - targets: ['storage-service:8084']
+
+  - job_name: 'gateway-routed-resource-service'
+    metrics_path: '/metrics/resource-service/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-song-service'
+    metrics_path: '/metrics/song-service/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-storage-service'
+    metrics_path: '/metrics/storage-service/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-resource-processor'
+    metrics_path: '/metrics/resource-processor/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
+
+  - job_name: 'gateway-routed-eureka'
+    metrics_path: '/metrics/eureka/actuator/prometheus'
+    static_configs:
+      - targets: [ 'api-gateway:8090' ]
