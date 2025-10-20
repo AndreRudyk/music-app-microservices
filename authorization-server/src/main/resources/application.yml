@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: authorization-server
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: http://localhost:9000
+oauth2:
+  client:
+    id: music-app-client
+    secret: music-app-secret
+    redirect-uris: >
+      http://127.0.0.1:8080/login/oauth2/code/music-app-client,
+      http://127.0.0.1:8080/authorized,
+      https://oauth.pstmn.io/v1/callback
+
+server:
+  port: 9000
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: localhost

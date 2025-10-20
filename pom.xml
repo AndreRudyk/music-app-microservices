@@ -134,6 +134,7 @@
         <module>eureka-service-registry</module>
         <module>api-gateway</module>
         <module>storage-service</module>
+        <module>authorization-server</module>
     </modules>
 
     <build>

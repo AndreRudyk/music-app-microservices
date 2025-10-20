@@ -2,6 +2,7 @@ package storageservice.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import response.storage.StorageResponse;
 import storageservice.converter.StorageConverter;
@@ -25,6 +26,7 @@ public class StorageController {
     private final StorageConverter storageConverter;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> createStorage(@Valid @RequestBody StorageRequest storage) {
         if (storage.getStorageType() == null || storage.getBucket() == null || storage.getPath() == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields"));
@@ -34,11 +36,13 @@ public class StorageController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Storage>> getAllStorages() {
         return ResponseEntity.ok(storageService.getAllStorages());
     }
 
     @DeleteMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteStorages(@RequestParam String id) {
         if (id.length() > 200) {
             return ResponseEntity.badRequest().body(Map.of("error", "CSV string too long"));
@@ -58,6 +62,7 @@ public class StorageController {
     }
 
     @GetMapping("/{storageType}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<StorageResponse> getStorageByType(@PathVariable("storageType") String storageType) {
         return storageService.getByType(storageType)
                 .map(storageConverter::domainToResponse)
