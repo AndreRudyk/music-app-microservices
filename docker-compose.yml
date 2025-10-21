@@ -57,6 +57,31 @@ services:
       - default
       - monitoring
 
+  authorization-server:
+    build:
+      context: .
+      dockerfile: ./authorization-server/Dockerfile-authorization
+    ports:
+      - "9000:9000"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: authorization-server
+      SPRING_SECURITY_OAUTH2_AUTHORIZATIONSERVER_ISSUER: http://authorization-server:9000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      - service-registry
+    labels:
+      - "logging=promtail"
+      - "logging.jobname=authorization-server"
+    networks:
+      - default
+      - monitoring
+
   resource-service:
     build:
       context: .
@@ -198,6 +223,8 @@ services:
     environment:
       SPRING_DATASOURCE_URL: ${STORAGE_DB_URL}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://authorization-server:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://authorization-server:9000/oauth2/jwks
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -209,6 +236,8 @@ services:
         condition: service_started
       service-registry:
         condition: service_started
+      authorization-server:
+        condition: service_healthy
       localstack:
         condition: service_healthy
     labels:
@@ -302,3 +331,4 @@ services:
 networks:
   monitoring:
     driver: bridge
+

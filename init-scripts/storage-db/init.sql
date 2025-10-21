@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS public;
 
 CREATE TABLE IF NOT EXISTS storage (
-    id INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     storage_type VARCHAR(55),
     bucket VARCHAR(55),
     path VARCHAR(255)
