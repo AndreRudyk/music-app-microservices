@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import resourceservice.entity.ResourceEntity;
 import resourceservice.entity.StorageType;
 import resourceservice.exception.ResourceNotFoundException;
@@ -13,6 +14,8 @@ import resourceservice.feign.SongServiceClient;
 import resourceservice.messaging.ResourceUploadedProducer;
 import resourceservice.repository.ResourceRepository;
 import resourceservice.service.S3Service;
+import resourceservice.service.StorageServiceWrapper;
+import response.storage.StorageResponse;
 
 import java.util.Random;
 import java.util.UUID;
@@ -31,6 +34,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
+import static resourceservice.entity.StorageType.STAGING;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceImplTest {
@@ -47,6 +51,9 @@ class ResourceServiceImplTest {
     @Mock
     private SongServiceClient songServiceClient;
 
+    @Mock
+    private StorageServiceWrapper storageServiceWrapper;
+
     @InjectMocks private ResourceServiceImpl resourceService;
 
     @Test
@@ -57,8 +64,14 @@ class ResourceServiceImplTest {
         ResourceEntity entity = new ResourceEntity(bucketKey, fileUrl, StorageType.STAGING);
         Integer integer = new Random().nextInt();
         entity.setId(integer);
+        StorageResponse storageResponse = new StorageResponse();
+        storageResponse.setBucket("s3");
+        ResponseEntity<StorageResponse> storage = ResponseEntity.of(Optional.of(storageResponse));
+
         when(s3Service.getFileUrl(anyString(), eq("s3"))).thenReturn(fileUrl);
         when(resourceRepository.save(any())).thenReturn(entity);
+        when(storageServiceWrapper.getStorageByType(STAGING.name())).thenReturn(storage);
+        when(s3Service.bucketExists("s3")).thenReturn(true);
 
         ResourceEntity result = resourceService.saveResourceToStaging(file);
 
@@ -75,6 +88,7 @@ class ResourceServiceImplTest {
         String bucketKey = "key";
         byte[] file = new byte[]{1};
         ResourceEntity entity = new ResourceEntity(bucketKey, "url", StorageType.PERMANENT);
+        entity.setFileUrl("http://localstack:4566/staging-bucket");
         when(resourceRepository.findById(id)).thenReturn(Optional.of(entity));
         when(s3Service.downloadFile(bucketKey, "staging-bucket")).thenReturn(file);
 
@@ -102,7 +116,7 @@ class ResourceServiceImplTest {
         when(resourceRepository.existsById(2)).thenReturn(true);
         List<ResourceEntity> resourceEntities = generateResources(2);
         when(resourceRepository.findAllById(List.of(1, 2))).thenReturn(resourceEntities);
-        doNothing().when(s3Service).deleteFile(anyString(), anyString());
+        doNothing().when(s3Service).deleteFile(anyString(), eq(null));
         doNothing().when(resourceRepository).deleteAllByIdInBatch(List.of(1, 2));
 
         List<Integer> resultIds = resourceService.deleteByIds(ids, "s3");
@@ -111,7 +125,7 @@ class ResourceServiceImplTest {
         verify(resourceRepository).existsById(1);
         verify(resourceRepository).existsById(2);
         verify(resourceRepository).findAllById(List.of(1, 2));
-        verify(s3Service, times(2)).deleteFile(anyString(), anyString());
+        verify(s3Service, times(2)).deleteFile(anyString(), eq(null));
         verify(resourceRepository).deleteAllByIdInBatch(List.of(1, 2));
     }
 

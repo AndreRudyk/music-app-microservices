@@ -41,6 +41,9 @@ public class ResourceUploadedListenerContractTest {
     @Mock
     private ResourceServiceClient resourceServiceClient;
 
+    @Mock
+    private ResourceProcessedProducer resourceProcessedProducer;
+
     @InjectMocks
     private ResourceUploadedListener resourceUploadedListener;
 

@@ -1,21 +1,26 @@
 package resourceservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import resourceservice.messaging.ResourceUploadedProducer;
 import resourceservice.repository.ResourceRepository;
 import resourceservice.service.S3Service;
+import response.storage.StorageResponse;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,8 +32,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.ANY)
-class
-ResourceServiceControllerIntegrationTest {
+@EnableAutoConfiguration(exclude = {
+        org.springframework.cloud.stream.config.BindingServiceConfiguration.class,
+        org.springframework.cloud.stream.function.FunctionConfiguration.class
+})
+class ResourceServiceControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,6 +52,16 @@ ResourceServiceControllerIntegrationTest {
 
     @MockitoBean
     private ResourceUploadedProducer resourceUploadedProducer;
+
+    private ResponseEntity<StorageResponse> storageResponse;
+
+    @BeforeEach
+    void setUp() {
+        StorageResponse storage = new StorageResponse();
+        storage.setBucket("s3");
+        storageResponse = ResponseEntity.of(Optional.of(storage));
+    }
+
 
     private static final String TEST_DATA_FOLDER = "src/test/resources/test-data/";
 

@@ -1,14 +1,21 @@
 package resourceservice.service;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import resourceservice.entity.ResourceEntity;
+import resourceservice.feign.StorageServiceClient;
 import resourceservice.repository.ResourceRepository;
 import resourceservice.messaging.ResourceUploadedProducer;
 import resourceservice.feign.SongServiceClient;
+import response.storage.StorageResponse;
 
 import java.util.Optional;
 
@@ -18,6 +25,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@EnableAutoConfiguration(exclude = {
+        org.springframework.cloud.stream.config.BindingServiceConfiguration.class,
+        org.springframework.cloud.stream.function.FunctionConfiguration.class
+})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class ResourceServiceComponentTest {
 
@@ -36,11 +47,28 @@ class ResourceServiceComponentTest {
     @MockitoBean
     private SongServiceClient songServiceClient;
 
+    @MockitoBean
+    private StorageServiceClient storageServiceClient;
+
+    @Autowired
+    private StorageServiceWrapper storageServiceWrapper;
+
+    private ResponseEntity<StorageResponse> storageResponse;
+
+    @BeforeEach
+    void setUp() {
+        StorageResponse storage = new StorageResponse();
+        storage.setBucket("s3");
+        storageResponse = ResponseEntity.of(Optional.of(storage));
+    }
+
     @Test
+    @Order(1)
     void saveResource_ToStaging_savesEntityToDatabase() {
         byte[] dummyFile = new byte[]{1, 2, 3};
         String dummyUrl = "http://dummy-url";
         when(s3Service.getFileUrl(any(), any())).thenReturn(dummyUrl);
+        when(storageServiceClient.getStorageByType(anyString())).thenReturn(storageResponse);
 
         ResourceEntity saved = resourceService.saveResourceToStaging(dummyFile);
 
@@ -55,10 +83,12 @@ class ResourceServiceComponentTest {
     }
 
     @Test
+    @Order(2)
     void resourceExists_returnsTrueForExistingResource() {
         byte[] dummyFile = new byte[]{4, 5, 6};
         String dummyUrl = "http://dummy-url-2";
         when(s3Service.getFileUrl(any(), any())).thenReturn(dummyUrl);
+        when(storageServiceClient.getStorageByType(anyString())).thenReturn(storageResponse);
         ResourceEntity saved = resourceService.saveResourceToStaging(dummyFile);
 
         boolean exists = resourceService.resourceExists(saved.getId().toString());
@@ -67,10 +97,12 @@ class ResourceServiceComponentTest {
     }
 
     @Test
+    @Order(3)
     void deleteByIds_deletesExistingResource() {
         byte[] dummyFile = new byte[]{4, 5, 6};
         String dummyUrl = "http://dummy-url-2";
         when(s3Service.getFileUrl(any(), any())).thenReturn(dummyUrl);
+        when(storageServiceClient.getStorageByType(anyString())).thenReturn(storageResponse);
 
         ResourceEntity saved = resourceService.saveResourceToStaging(dummyFile);
 
