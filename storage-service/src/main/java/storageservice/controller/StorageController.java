@@ -36,7 +36,7 @@ public class StorageController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<Storage>> getAllStorages() {
         return ResponseEntity.ok(storageService.getAllStorages());
     }
@@ -62,7 +62,7 @@ public class StorageController {
     }
 
     @GetMapping("/{storageType}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<StorageResponse> getStorageByType(@PathVariable("storageType") String storageType) {
         return storageService.getByType(storageType)
                 .map(storageConverter::domainToResponse)
