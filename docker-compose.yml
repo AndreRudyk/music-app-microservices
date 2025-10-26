@@ -254,7 +254,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER_STORAGE}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_STORAGE}
     ports:
-      - "5434:5434"
+      - "5434:5432"
     volumes:
       - ./init-scripts/storage-db:/docker-entrypoint-initdb.d
     healthcheck:
